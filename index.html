@@ -471,6 +471,7 @@
       try {
         const response = await fetch(FUNCTION_URL, {
           method: 'POST',
+          mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
