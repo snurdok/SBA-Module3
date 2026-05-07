@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Geometry Library</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --accent: #7c6af7;
+      --accent2: #e0a96d;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --success: #5cb98c;
+      --error: #e06c75;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 10px;
+      font-weight: 300;
+    }
+
+    /* Shape selector */
+    .shape-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .shape-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 8px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .shape-tab .icon {
+      font-size: 20px;
+    }
+
+    .shape-tab:hover {
+      color: var(--text);
+      background: var(--border);
+    }
+
+    .shape-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* Input group */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      padding: 12px 16px;
+      width: 100%;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="number"]::placeholder {
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      background: #9580ff;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(124,106,247,0.3);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: shimmer 1s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Result */
+    .result-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .result-box.show { display: flex; }
+    .result-box.error { border-color: var(--error); }
+    .result-box.success { border-color: var(--success); }
+
+    .result-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .result-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .result-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .result-value.error-text { color: var(--error); font-size: 14px; }
+
+    /* Shape visual */
+    .shape-preview {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .shape-preview svg {
+      opacity: 0.15;
+      transition: opacity 0.3s;
+    }
+
+    .shape-preview svg:hover { opacity: 0.3; }
+
+    /* Formula */
+    .formula {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      background: rgba(224,169,109,0.08);
+      border: 1px solid rgba(224,169,109,0.15);
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Engineering Geometry Library</div>
+      <h1>Shape <span>Area</span><br>Calculator</h1>
+      <p class="subtitle">Frontend → Azure Function API · Module 3</p>
+    </header>
+
+    <!-- Shape Tabs -->
+    <div class="shape-tabs">
+      <button class="shape-tab active" onclick="switchShape('triangle')">
+        <span class="icon">△</span> Triangle
+      </button>
+      <button class="shape-tab" onclick="switchShape('square')">
+        <span class="icon">□</span> Square
+      </button>
+      <button class="shape-tab" onclick="switchShape('circle')">
+        <span class="icon">○</span> Circle
+      </button>
+    </div>
+
+    <!-- Triangle Panel -->
+    <div class="card panel active" id="panel-triangle">
+      <div class="card-title">// Triangle</div>
+      <div class="shape-preview">
+        <svg width="80" height="70" viewBox="0 0 80 70">
+          <polygon points="40,5 75,65 5,65" fill="none" stroke="#7c6af7" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="formula">A = 0.5 × base × height</div>
+      <div class="input-group">
+        <div class="input-row">
+          <label>Base</label>
+          <input type="number" id="tri-base" placeholder="e.g. 10" min="0" step="any"/>
+        </div>
+        <div class="input-row">
+          <label>Height</label>
+          <input type="number" id="tri-height" placeholder="e.g. 5" min="0" step="any"/>
+        </div>
+      </div>
+      <button class="btn" onclick="calculate('triangle')">Calculate Area</button>
+      <div class="result-box" id="result-triangle">
+        <div class="result-icon">△</div>
+        <div>
+          <div class="result-label">Area</div>
+          <div class="result-value" id="result-triangle-val"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Square Panel -->
+    <div class="card panel" id="panel-square">
+      <div class="card-title">// Square</div>
+      <div class="shape-preview">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <rect x="5" y="5" width="60" height="60" fill="none" stroke="#7c6af7" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="formula">A = side²</div>
+      <div class="input-group">
+        <div class="input-row">
+          <label>Side Length</label>
+          <input type="number" id="sq-side" placeholder="e.g. 4" min="0" step="any"/>
+        </div>
+      </div>
+      <button class="btn" onclick="calculate('square')">Calculate Area</button>
+      <div class="result-box" id="result-square">
+        <div class="result-icon">□</div>
+        <div>
+          <div class="result-label">Area</div>
+          <div class="result-value" id="result-square-val"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Circle Panel -->
+    <div class="card panel" id="panel-circle">
+      <div class="card-title">// Circle</div>
+      <div class="shape-preview">
+        <svg width="70" height="70" viewBox="0 0 70 70">
+          <circle cx="35" cy="35" r="30" fill="none" stroke="#7c6af7" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="formula">A = π × radius²</div>
+      <div class="input-group">
+        <div class="input-row">
+          <label>Radius</label>
+          <input type="number" id="ci-radius" placeholder="e.g. 7" min="0" step="any"/>
+        </div>
+      </div>
+      <button class="btn" onclick="calculate('circle')">Calculate Area</button>
+      <div class="result-box" id="result-circle">
+        <div class="result-icon">○</div>
+        <div>
+          <div class="result-label">Area</div>
+          <div class="result-value" id="result-circle-val"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      WSB Merito University · SBA Module 3 ·
+      <a href="https://github.com/snurdok/SBA" target="_blank">github.com/snurdok/SBA</a>
+    </footer>
+  </div>
+
+  <script>
+    // ⚠️ IMPORTANT: Replace this URL with your actual Azure Function URL after deployment
+    const FUNCTION_URL = 'https://YOUR_FUNCTION_APP_NAME.azurewebsites.net/api/CalculateArea';
+
+    function switchShape(shape) {
+      document.querySelectorAll('.shape-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('panel-' + shape).classList.add('active');
+    }
+
+    async function calculate(shape) {
+      let payload = { shape };
+      let valid = true;
+
+      if (shape === 'triangle') {
+        const base = parseFloat(document.getElementById('tri-base').value);
+        const height = parseFloat(document.getElementById('tri-height').value);
+        if (isNaN(base) || isNaN(height) || base <= 0 || height <= 0) { valid = false; }
+        else { payload.base = base; payload.height = height; }
+      } else if (shape === 'square') {
+        const side = parseFloat(document.getElementById('sq-side').value);
+        if (isNaN(side) || side <= 0) { valid = false; }
+        else { payload.side = side; }
+      } else if (shape === 'circle') {
+        const radius = parseFloat(document.getElementById('ci-radius').value);
+        if (isNaN(radius) || radius <= 0) { valid = false; }
+        else { payload.radius = radius; }
+      }
+
+      const resultBox = document.getElementById('result-' + shape);
+      const resultVal = document.getElementById('result-' + shape + '-val');
+      const btn = event.currentTarget;
+
+      if (!valid) {
+        resultBox.className = 'result-box show error';
+        resultVal.className = 'result-value error-text';
+        resultVal.textContent = 'Please enter valid positive numbers.';
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.textContent = 'Calculating...';
+
+      try {
+        const response = await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.result !== undefined) {
+          resultBox.className = 'result-box show success';
+          resultVal.className = 'result-value';
+          resultVal.textContent = parseFloat(data.result.toFixed(4)) + ' units²';
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (err) {
+        resultBox.className = 'result-box show error';
+        resultVal.className = 'result-value error-text';
+        resultVal.textContent = 'Error: ' + err.message;
+      } finally {
+        btn.classList.remove('loading');
+        btn.textContent = 'Calculate Area';
+      }
+    }
+  </script>
+</body>
+</html>
